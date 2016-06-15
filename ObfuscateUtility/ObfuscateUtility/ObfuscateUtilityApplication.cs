@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ObfuscateUtility
@@ -14,7 +10,11 @@ namespace ObfuscateUtility
     public partial class ObfuscateUtilityApplication : Form
     {
         const int HandlestringLength = 20;
+        const int ListSize = 10000000;
         Aes localAes = Aes.Create();
+        List<string> lstStringHandles = new List<string>(ListSize);
+        List<string> lstEncryptedHandles = new List<string>(ListSize);
+        List<string> lstDecryptedHandles = new List<string>(ListSize);
         public ObfuscateUtilityApplication()
         {
             InitializeComponent();
@@ -22,58 +22,106 @@ namespace ObfuscateUtility
 
         private void btnAES_Click(object sender, EventArgs e)
         {
-            //Generate random strings
-            //Encrypt them and monitor the time
-            //decrypt them and monitor the time
-            //Make sure string matches original after decription
+            lstEncryptedHandles.Clear();
+            lstDecryptedHandles.Clear();
 
-            string OriginalHandleString = RandomStringKeyGenerator.GetUniqueStringKey(HandlestringLength);
-            string ObfuscatedHandleString = ObfuscateUtilitiesAes.EncryptString(OriginalHandleString, localAes.Key, localAes.IV);
-            string DecryptedString = ObfuscateUtilitiesAes.DecryptString(ObfuscatedHandleString, localAes.Key, localAes.IV);
-
-            //show values on form
-            txtOriginalStr.Text = OriginalHandleString;
-            txtEncryptedStr.Text = ObfuscatedHandleString;
-            txtDecryptedStr.Text = DecryptedString;
-
-            if (!OriginalHandleString.Equals(DecryptedString))
+            //Encrypt the string handles
+            var stopWatchEn = Stopwatch.StartNew();
+            foreach (var handle in lstStringHandles)
             {
-                MessageBox.Show("Error in Program", "ObfuscateUtilityApplication", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                lstEncryptedHandles.Add(ObfuscateUtilitiesAes.EncryptString(handle, localAes.Key, localAes.IV));
+                enStringHandlePB.Value = enStringHandlePB.Value + 1;
             }
+            stopWatchEn.Stop();
+            var elapsedMsEn = stopWatchEn.ElapsedMilliseconds;
+            txtEncryptedStr.Text = elapsedMsEn.ToString();
+            txtTimeTaken.Text = lstEncryptedHandles.Max(s => s.Length).ToString();
+
+            //Decrypt the string handles
+            var stopWatchDe = Stopwatch.StartNew();
+            foreach (var handle in lstEncryptedHandles)
+            {
+                lstDecryptedHandles.Add(ObfuscateUtilitiesAes.DecryptString(handle, localAes.Key, localAes.IV));
+                deStringHandlePB.Value = deStringHandlePB.Value + 1;
+            }
+            stopWatchDe.Stop();
+            var elapsedMsDe = stopWatchDe.ElapsedMilliseconds;
+            
+            //show values on form
+            txtDecryptedStr.Text = elapsedMsDe.ToString();
         }
 
         private void btnCCASCII_Click(object sender, EventArgs e)
         {
-            string OriginalHandleString = RandomStringKeyGenerator.GetUniqueStringKey(HandlestringLength);
-            string ObfuscatedHandleString = ObfuscateUtilitiesCaesarCipherASCII.EncryptString(OriginalHandleString);
-            string DecryptedString = ObfuscateUtilitiesCaesarCipherASCII.DecryptString(ObfuscatedHandleString);
+            lstEncryptedHandles.Clear();
+            lstDecryptedHandles.Clear();
+
+            //Encrypt the string handles
+            var stopWatchEn = Stopwatch.StartNew();
+            foreach (var handle in lstStringHandles)
+            {
+                lstEncryptedHandles.Add(ObfuscateUtilitiesCaesarCipherASCII.EncryptString(handle));
+            }
+            stopWatchEn.Stop();
+            var elapsedMsEn = stopWatchEn.ElapsedMilliseconds;
+
+
+            //Decrypt the string handles
+            var stopWatchDe = Stopwatch.StartNew();
+            foreach (var handle in lstEncryptedHandles)
+            {
+                lstDecryptedHandles.Add(ObfuscateUtilitiesCaesarCipherASCII.DecryptString(handle));
+            }
+            stopWatchDe.Stop();
+            var elapsedMsDe = stopWatchDe.ElapsedMilliseconds;
 
             //show values on form
-            txtOriginalStr.Text = OriginalHandleString;
-            txtEncryptedStr.Text = ObfuscatedHandleString;
-            txtDecryptedStr.Text = DecryptedString;
-
-            if (!OriginalHandleString.Equals(DecryptedString))
-            {
-                MessageBox.Show("Error in Program", "ObfuscateUtilityApplication", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
-            }
+            txtEncryptedStr.Text = elapsedMsEn.ToString();
+            txtDecryptedStr.Text = elapsedMsDe.ToString();
+            txtTimeTaken.Text = lstEncryptedHandles.Max(s => s.Length).ToString();
         }
 
         private void btnCCUTF8_Click(object sender, EventArgs e)
         {
-            string OriginalHandleString = RandomStringKeyGenerator.GetUniqueStringKey(HandlestringLength);
-            string ObfuscatedHandleString = ObfuscateUtilitiesCaesarCipherUTF8.EncryptString(OriginalHandleString);
-            string DecryptedString = ObfuscateUtilitiesCaesarCipherUTF8.DecryptString(ObfuscatedHandleString);
+            lstEncryptedHandles.Clear();
+            lstDecryptedHandles.Clear();
+
+            //Encrypt the string handles
+            var stopWatchEn = Stopwatch.StartNew();
+            foreach (var handle in lstStringHandles)
+            {
+                lstEncryptedHandles.Add(ObfuscateUtilitiesCaesarCipherUTF8.EncryptString(handle));
+            }
+            stopWatchEn.Stop();
+            var elapsedMsEn = stopWatchEn.ElapsedMilliseconds;
+
+
+            //Decrypt the string handles
+            var stopWatchDe = Stopwatch.StartNew();
+            foreach (var handle in lstEncryptedHandles)
+            {
+                lstDecryptedHandles.Add(ObfuscateUtilitiesCaesarCipherUTF8.DecryptString(handle));
+            }
+            stopWatchDe.Stop();
+            var elapsedMsDe = stopWatchDe.ElapsedMilliseconds;
 
             //show values on form
-            txtOriginalStr.Text = OriginalHandleString;
-            txtEncryptedStr.Text = ObfuscatedHandleString;
-            txtDecryptedStr.Text = DecryptedString;
+            txtEncryptedStr.Text = elapsedMsEn.ToString();
+            txtDecryptedStr.Text = elapsedMsDe.ToString();
+            txtTimeTaken.Text = lstEncryptedHandles.Max(s => s.Length).ToString();
+        }
 
-            if (!OriginalHandleString.Equals(DecryptedString))
+        private void btnGenHandles_Click(object sender, EventArgs e)
+        {
+            lstStringHandles.Clear();
+            var stopWatch = Stopwatch.StartNew();
+            for (int i = 0; i <= ListSize; i++)
             {
-                MessageBox.Show("Error in Program", "ObfuscateUtilityApplication", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                lstStringHandles.Add(RandomStringKeyGenerator.GetUniqueStringKey(HandlestringLength));
             }
+            stopWatch.Stop();
+            var elapsedMs = stopWatch.ElapsedMilliseconds;
+            txtOriginalStr.Text = elapsedMs.ToString();
         }
     }
 }
