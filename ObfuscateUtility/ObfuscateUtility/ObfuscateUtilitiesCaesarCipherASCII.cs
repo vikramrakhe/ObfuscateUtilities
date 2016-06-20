@@ -1,39 +1,35 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
+
 
 namespace ObfuscateUtility
 {
     public static class ObfuscateUtilitiesCaesarCipherASCII
     {
+        private static int m_key = 1820943356;
+
         public static string EncryptString(string plainText)
         {
-            //plainText = "MyHandleStringForTesting";
-
-            //encrypt the ASCII String now.
-            return Rot47(Encoding.ASCII.GetBytes(plainText));
+            //plainText = "あいうえお";
+            byte[] obsicatedbytes = EncryptDecrypt(Encoding.UTF8.GetBytes(plainText));
+            return Convert.ToBase64String(obsicatedbytes);
         }
 
         public static string DecryptString(string obfuscatedString)
         {
-            return Rot47(Encoding.ASCII.GetBytes(obfuscatedString)); ;
-        }
-        
-        private static char Rot47(char chr)
-        {
-            if (chr == ' ') return ' ';
-            int ascii = chr;
-            ascii += 47;
-            if (ascii > 126) ascii -= 94;
-            if (ascii < 33) ascii += 94;
-            return (char)ascii;
+           byte[] decryptedbytes = EncryptDecrypt(Convert.FromBase64String(obfuscatedString));
+           return Encoding.UTF8.GetString(decryptedbytes);
         }
 
-        private static string Rot47(byte[] str)
+        private static byte[] EncryptDecrypt(byte[] toEncrypt)
         {
-            string RetStr = "";
-            foreach (char c in str)
-                RetStr += Rot47(c).ToString();
-            return RetStr;
-        }
+            byte[] output = new byte[toEncrypt.Length];
+            for (int i = 0; i < toEncrypt.Length; i++)
+            {
+                output[i] = (byte)(toEncrypt[i] ^ m_key);
+            }
 
+            return output;
+        }
     }
 }
